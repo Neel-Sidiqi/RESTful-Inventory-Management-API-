@@ -28,9 +28,18 @@ public class AIService {
         return callOllama(prompt);
     }
 
+
     private String formatInventory(List<Product> products) {
-        return products.stream()
-                .map(p -> "- " + p.getName() + ": " + p.getQuantity() + " units")
+        // Group by product name and sum up the quantities
+        Map<String, Integer> aggregatedInventory = products.stream()
+                .collect(Collectors.groupingBy(
+                        Product::getName,
+                        Collectors.summingInt(Product::getQuantity)
+                ));
+
+        // Format the aggregated map into a string
+        return aggregatedInventory.entrySet().stream()
+                .map(entry -> "- " + entry.getKey() + ": " + entry.getValue() + " units")
                 .collect(Collectors.joining("\n"));
     }
 
@@ -55,7 +64,7 @@ public class AIService {
         ANSWER:
         """.formatted(inventory, question);
     }
-    
+
 
     private String callOllama(String prompt) {
 
